@@ -113,11 +113,9 @@ setup_clearnet_urls() {
 }
 
 install_caddy_pkg() {
-  apt-get install -y debian-keyring debian-archive-keyring
-  curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' \
-    | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
-  curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' \
-    | tee /etc/apt/sources.list.d/caddy-stable.sources >/dev/null
+  # Debian/Raspberry Pi OS (Trixie+) already ships caddy. A leftover
+  # Cloudsmith .sources from older setup.sh breaks apt (deb vs deb822).
+  rm -f /etc/apt/sources.list.d/caddy-stable.sources /etc/apt/sources.list.d/caddy-stable.list
   apt-get update
   apt-get install -y caddy
 }
