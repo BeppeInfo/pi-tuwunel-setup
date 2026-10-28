@@ -45,7 +45,8 @@ Clientes podem continuar em `http://<onion>/`. Federação usa `https://<onion>/
 Clientes: Tor Browser / Orbot, URL `http://<onion>/` (HTTP; TLS no onion não entra).
 
 ```bash
-torsocks curl -sS http://<onion>/_matrix/client/versions
+curl -sS --socks5-hostname 127.0.0.1:9050 http://<onion>/_matrix/client/versions
+curl -sk --socks5-hostname 127.0.0.1:9050 https://<onion>/_matrix/federation/v1/version
 ```
 
 ## Arquivos

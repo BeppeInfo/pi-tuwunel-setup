@@ -250,8 +250,8 @@ if [[ "$NETWORK_MODE" == "tor" ]]; then
   echo "Federação HTTPS no onion; o outro homeserver precisa aceitar o cert interno, e.g."
   echo "  allow_invalid_tls_certificates = true"
   echo "Não federação com matrix.org — só quem fala Tor + TLS frouxo."
-  echo "Checagem HTTP:  torsocks curl -sS ${CLIENT_URL}/_matrix/client/versions"
-  echo "Checagem HTTPS: torsocks curl -sk https://${SERVER_NAME}/_matrix/federation/v1/version"
+  echo "Checagem HTTP:  curl -sS --socks5-hostname 127.0.0.1:9050 ${CLIENT_URL}/_matrix/client/versions"
+  echo "Checagem HTTPS: curl -sk --socks5-hostname 127.0.0.1:9050 https://${SERVER_NAME}/_matrix/federation/v1/version"
 else
   echo "Ainda no roteador: IP LAN estático; encaminhar ${EXTERNAL_HTTP_PORT} e ${EXTERNAL_HTTPS_PORT} para o Pi."
   echo "Ainda no DNS: A/AAAA do apex (e de ${MATRIX_HOST} se não for CNAME) para o IP público do gateway."
