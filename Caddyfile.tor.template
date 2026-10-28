@@ -1,0 +1,14 @@
+# Só localhost: Tor encaminha 80/443 do onion para cá.
+{
+	default_bind 127.0.0.1
+	auto_https disable_redirects
+}
+
+http://${SERVER_NAME} {
+	reverse_proxy ${LISTEN_ADDR}:${LISTEN_PORT}
+}
+
+https://${SERVER_NAME} {
+	tls internal
+	reverse_proxy ${LISTEN_ADDR}:${LISTEN_PORT}
+}

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Instala Tuwunel em Debian/Raspberry Pi OS.
 # NETWORK_MODE=clearnet: Caddy HTTPS → 6167 (não grava o cartão, não configura roteador/DNS).
-# NETWORK_MODE=tor: onion v3 como server_name, sem Caddy.
+# NETWORK_MODE=tor: onion v3 como server_name; Caddy tls internal em 127.0.0.1:443.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -82,8 +82,8 @@ setup_tor() {
   systemctl reload tor 2>/dev/null || systemctl restart tor
   wait_for_onion
   MATRIX_HOST="$SERVER_NAME"
-  WELL_KNOWN_CLIENT="http://${SERVER_NAME}"
-  WELL_KNOWN_SERVER="${SERVER_NAME}:80"
+  WELL_KNOWN_CLIENT="https://${SERVER_NAME}"
+  WELL_KNOWN_SERVER="${SERVER_NAME}:443"
   CLIENT_URL="http://${SERVER_NAME}"
   PROXY_BLOCK="$(cat "$SCRIPT_DIR/tuwunel-proxy-tor.snippet")"
 }
@@ -112,8 +112,7 @@ setup_clearnet_urls() {
   WELL_KNOWN_SERVER="${MATRIX_HOST}:${EXTERNAL_HTTPS_PORT}"
 }
 
-setup_caddy() {
-  echo "==> Caddy (HTTPS :${EXTERNAL_HTTPS_PORT} → Tuwunel ${LISTEN_ADDR}:${LISTEN_PORT})"
+install_caddy_pkg() {
   apt-get install -y debian-keyring debian-archive-keyring
   curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' \
     | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
@@ -121,7 +120,21 @@ setup_caddy() {
     | tee /etc/apt/sources.list.d/caddy-stable.sources >/dev/null
   apt-get update
   apt-get install -y caddy
+}
+
+setup_caddy() {
+  echo "==> Caddy (HTTPS :${EXTERNAL_HTTPS_PORT} → Tuwunel ${LISTEN_ADDR}:${LISTEN_PORT})"
+  install_caddy_pkg
   render "$SCRIPT_DIR/Caddyfile.template" /etc/caddy/Caddyfile
+  caddy validate --config /etc/caddy/Caddyfile
+  systemctl enable --now caddy
+  systemctl reload caddy
+}
+
+setup_caddy_tor() {
+  echo "==> Caddy Tor (127.0.0.1:80/443 tls internal → ${LISTEN_ADDR}:${LISTEN_PORT})"
+  install_caddy_pkg
+  render "$SCRIPT_DIR/Caddyfile.tor.template" /etc/caddy/Caddyfile
   caddy validate --config /etc/caddy/Caddyfile
   systemctl enable --now caddy
   systemctl reload caddy
@@ -206,6 +219,8 @@ systemctl enable --now tuwunel.service
 
 if [[ "$NETWORK_MODE" == "clearnet" ]]; then
   setup_caddy
+elif [[ "$NETWORK_MODE" == "tor" ]]; then
+  setup_caddy_tor
 fi
 
 if [[ "$INSTALL_UFW" == "1" ]]; then
@@ -227,6 +242,7 @@ if [[ "$NETWORK_MODE" == "clearnet" ]]; then
   echo "  Caddy:    $(systemctl is-active caddy)"
 else
   echo "  Tor:      $(systemctl is-active tor)"
+  echo "  Caddy:    $(systemctl is-active caddy)"
 fi
 echo "  MXID:     @usuario:${SERVER_NAME}"
 echo "  Cliente:  ${CLIENT_URL}"
@@ -234,10 +250,13 @@ echo "  Federação well-known: ${WELL_KNOWN_SERVER}"
 echo "  Token:    ${REGISTRATION_TOKEN}"
 echo
 if [[ "$NETWORK_MODE" == "tor" ]]; then
-  echo "Tor-only: sem DNS, sem 80/443, sem Caddy. Guarde ${HS_DIR} (é a identidade onion)."
-  echo "Clientes: Tor Browser / Orbot, URL ${CLIENT_URL}"
-  echo "Não federação com matrix.org — só outros .onion."
-  echo "Checagem: torsocks curl -sS ${CLIENT_URL}/_matrix/client/versions"
+  echo "Tor-only: sem DNS; Caddy só em 127.0.0.1 (tls internal). Guarde ${HS_DIR}."
+  echo "Clientes: Tor Browser / Orbot, URL ${CLIENT_URL} (HTTP) ou https:// (certificado local)."
+  echo "Federação HTTPS no onion; o outro homeserver precisa aceitar o cert interno, e.g."
+  echo "  allow_invalid_tls_certificates = true"
+  echo "Não federação com matrix.org — só quem fala Tor + TLS frouxo."
+  echo "Checagem HTTP:  torsocks curl -sS ${CLIENT_URL}/_matrix/client/versions"
+  echo "Checagem HTTPS: torsocks curl -sk https://${SERVER_NAME}/_matrix/federation/v1/version"
 else
   echo "Ainda no roteador: IP LAN estático; encaminhar ${EXTERNAL_HTTP_PORT} e ${EXTERNAL_HTTPS_PORT} para o Pi."
   echo "Ainda no DNS: A/AAAA do apex (e de ${MATRIX_HOST} se não for CNAME) para o IP público do gateway."
