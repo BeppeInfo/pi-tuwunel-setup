@@ -145,9 +145,12 @@ case "$NETWORK_MODE" in
     ;;
 esac
 
-echo "==> Pacotes base"
+echo "==> Sistema atualizado"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update
+apt-get -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold full-upgrade
+
+echo "==> Pacotes base"
 apt-get install -y ca-certificates curl gpg apt-transport-https gettext-base
 
 if [[ "$INSTALL_UNATTENDED_UPGRADES" == "1" ]]; then
