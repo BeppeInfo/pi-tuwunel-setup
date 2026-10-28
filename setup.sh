@@ -113,9 +113,6 @@ setup_clearnet_urls() {
 }
 
 install_caddy_pkg() {
-  # Debian/Raspberry Pi OS (Trixie+) already ships caddy. A leftover
-  # Cloudsmith .sources from older setup.sh breaks apt (deb vs deb822).
-  rm -f /etc/apt/sources.list.d/caddy-stable.sources /etc/apt/sources.list.d/caddy-stable.list
   apt-get update
   apt-get install -y caddy
 }
