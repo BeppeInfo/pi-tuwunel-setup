@@ -1,0 +1,10 @@
+# Gerado por setup.sh (NETWORK_MODE=tor). SOCKS só em localhost.
+SocksPort 127.0.0.1:9050
+SocksPolicy accept 127.0.0.1
+SocksPolicy reject *
+ClientOnly 1
+ExitRelay 0
+
+HiddenServiceDir /var/lib/tor/tuwunel
+HiddenServiceVersion 3
+HiddenServicePort 80 127.0.0.1:${LISTEN_PORT}

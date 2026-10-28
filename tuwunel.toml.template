@@ -1,0 +1,23 @@
+# Gerado por setup.sh — ajuste fino em /etc/tuwunel/tuwunel.toml depois.
+# Documentação: https://matrix-construct.github.io/tuwunel/
+
+[global]
+server_name = "${SERVER_NAME}"
+
+address = ["${LISTEN_ADDR}"]
+port = [${LISTEN_PORT}]
+
+database_path = "${DATABASE_PATH}"
+
+allow_federation = ${ALLOW_FEDERATION}
+allow_registration = ${ALLOW_REGISTRATION}
+registration_token = "${REGISTRATION_TOKEN}"
+
+max_request_size = ${MAX_REQUEST_SIZE}
+
+[global.well_known]
+# client: URL HTTPS (com porta se não for 443) ou http://onion
+# server: host:porta da federação (não é URL)
+client = "${WELL_KNOWN_CLIENT}"
+server = "${WELL_KNOWN_SERVER}"
+${PROXY_BLOCK}

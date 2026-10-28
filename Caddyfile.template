@@ -1,0 +1,20 @@
+# Portas externas (roteador deve encaminhá-las para o Pi).
+{
+	http_port ${EXTERNAL_HTTP_PORT}
+	https_port ${EXTERNAL_HTTPS_PORT}
+}
+
+${MATRIX_HOST} {
+	${TLS_LINE}
+	reverse_proxy ${LISTEN_ADDR}:${LISTEN_PORT}
+}
+
+${SERVER_NAME} {
+	${TLS_LINE}
+	handle /.well-known/matrix/* {
+		reverse_proxy ${LISTEN_ADDR}:${LISTEN_PORT}
+	}
+	handle {
+		respond "ok" 200
+	}
+}
