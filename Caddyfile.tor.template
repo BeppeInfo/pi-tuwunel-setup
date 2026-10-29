@@ -5,10 +5,12 @@
 }
 
 http://${SERVER_NAME} {
+	${ROOT_LINE}
 	reverse_proxy ${LISTEN_ADDR}:${LISTEN_PORT}
 }
 
 https://${SERVER_NAME} {
 	tls internal
+	${ROOT_LINE}
 	reverse_proxy ${LISTEN_ADDR}:${LISTEN_PORT}
 }

@@ -14,10 +14,11 @@ allow_registration = ${ALLOW_REGISTRATION}
 registration_token = "${REGISTRATION_TOKEN}"
 
 max_request_size = ${MAX_REQUEST_SIZE}
+${TOR_GLOBAL_BLOCK}
 
 [global.well_known]
 # client: URL HTTPS (com porta se não for 443) ou http://onion
-# server: host:porta da federação (não é URL)
+# server: host:porta da federação (não é URL); sempre HTTPS, no onion use :443
 client = "${WELL_KNOWN_CLIENT}"
 server = "${WELL_KNOWN_SERVER}"
 ${PROXY_BLOCK}

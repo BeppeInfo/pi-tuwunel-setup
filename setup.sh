@@ -36,7 +36,19 @@ source "$CONFIG_FILE"
 : "${TLS_MODE:=acme}"
 : "${SERVER_NAME:=}"
 : "${MATRIX_HOST:=}"
+: "${ROOT_MESSAGE:=}"
 PROXY_BLOCK=""
+TOR_GLOBAL_BLOCK=""
+
+# Texto em "/" no navegador (o do Tuwunel é fixo no código). Vazio = padrão.
+ROOT_LINE=""
+if [[ -n "$ROOT_MESSAGE" ]]; then
+  if [[ "$ROOT_MESSAGE" == *'`'* ]]; then
+    echo "ROOT_MESSAGE não pode conter crase (\`)" >&2
+    exit 1
+  fi
+  ROOT_LINE="respond / \`${ROOT_MESSAGE}\` 200"
+fi
 
 if [[ -z "${REGISTRATION_TOKEN:-}" ]]; then
   REGISTRATION_TOKEN="$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32)"
@@ -82,10 +94,13 @@ setup_tor() {
   systemctl reload tor 2>/dev/null || systemctl restart tor
   wait_for_onion
   MATRIX_HOST="$SERVER_NAME"
-  WELL_KNOWN_CLIENT="https://${SERVER_NAME}"
+  # Clientes em HTTP: Tor já cifra, e o Tor Browser recusa o cert tls internal.
+  # Só a federação (WELL_KNOWN_SERVER) precisa de HTTPS.
+  WELL_KNOWN_CLIENT="http://${SERVER_NAME}"
   WELL_KNOWN_SERVER="${SERVER_NAME}:443"
   CLIENT_URL="http://${SERVER_NAME}"
   PROXY_BLOCK="$(cat "$SCRIPT_DIR/tuwunel-proxy-tor.snippet")"
+  TOR_GLOBAL_BLOCK="$(cat "$SCRIPT_DIR/tuwunel-global-tor.snippet")"
 }
 
 setup_clearnet_urls() {
@@ -192,7 +207,7 @@ apt-get install -y tuwunel
 export SERVER_NAME MATRIX_HOST LISTEN_ADDR LISTEN_PORT DATABASE_PATH
 export ALLOW_REGISTRATION ALLOW_FEDERATION REGISTRATION_TOKEN MAX_REQUEST_SIZE
 export WELL_KNOWN_CLIENT WELL_KNOWN_SERVER
-export EXTERNAL_HTTP_PORT EXTERNAL_HTTPS_PORT TLS_LINE PROXY_BLOCK
+export EXTERNAL_HTTP_PORT EXTERNAL_HTTPS_PORT TLS_LINE PROXY_BLOCK TOR_GLOBAL_BLOCK ROOT_LINE
 
 echo "==> /etc/tuwunel/tuwunel.toml"
 install -d -m 755 /etc/tuwunel
@@ -210,7 +225,9 @@ EOF
 fi
 
 systemctl daemon-reload
-systemctl enable --now tuwunel.service
+systemctl enable tuwunel.service
+# restart, não --now: em reexecução o processo antigo seguiria com o toml velho
+systemctl restart tuwunel.service
 
 if [[ "$NETWORK_MODE" == "clearnet" ]]; then
   setup_caddy

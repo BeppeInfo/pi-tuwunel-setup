@@ -6,6 +6,7 @@
 
 ${MATRIX_HOST} {
 	${TLS_LINE}
+	${ROOT_LINE}
 	reverse_proxy ${LISTEN_ADDR}:${LISTEN_PORT}
 }
 

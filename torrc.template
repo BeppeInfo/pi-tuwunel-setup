@@ -1,11 +1,9 @@
 # Gerado por setup.sh (NETWORK_MODE=tor). SOCKS só em localhost.
 SocksPort 127.0.0.1:9050
-SocksPolicy accept 127.0.0.1
-SocksPolicy reject *
-ClientOnly 1
-ExitRelay 0
 
 HiddenServiceDir /var/lib/tor/tuwunel
 HiddenServiceVersion 3
 HiddenServicePort 80 127.0.0.1:80
 HiddenServicePort 443 127.0.0.1:443
+# Fallback da federação (sem well-known → :8448), também HTTPS
+HiddenServicePort 8448 127.0.0.1:443

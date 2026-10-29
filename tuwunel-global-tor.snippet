@@ -1,0 +1,9 @@
+
+# Outros onions usam Caddy tls internal (certificado autoassinado).
+allow_invalid_tls_certificates = true
+
+# Circuito novo até um onion leva ~4-8 s; os padrões (6 s, 10 s, 8 s) falham.
+well_known_conn_timeout = 30
+well_known_timeout = 60
+request_conn_timeout = 30
+federation_keys_timeout = 30

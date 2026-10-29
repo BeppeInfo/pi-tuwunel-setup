@@ -53,10 +53,11 @@ curl -sk --socks5-hostname 127.0.0.1:9050 https://<onion>/_matrix/federation/v1/
 
 | Arquivo | Função |
 |---|---|
-| `config.env.example` | Variáveis (modo, domínio, token, ufw) |
+| `config.env.example` | Variáveis (modo, domínio, token, ufw, `ROOT_MESSAGE`) |
 | `config.env` | Sua cópia — não versionar |
 | `tuwunel.toml.template` | Vira `/etc/tuwunel/tuwunel.toml` |
 | `tuwunel-proxy-tor.snippet` | Bloco `[global.proxy]` no modo tor |
+| `tuwunel-global-tor.snippet` | Modo tor: aceita cert interno dos outros onions, timeouts maiores |
 | `Caddyfile.template` | Clearnet: `/etc/caddy/Caddyfile` |
 | `Caddyfile.tor.template` | Tor: Caddy em 127.0.0.1 com `tls internal` |
 | `torrc.template` | Só tor: `/etc/tor/torrc.d/tuwunel.conf` |
