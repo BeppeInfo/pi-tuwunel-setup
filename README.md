@@ -65,6 +65,38 @@ curl -sk --socks5-hostname 127.0.0.1:9050 https://<onion>/_matrix/federation/v1/
 
 `REGISTRATION_TOKEN` vazio faz o script gerar um e imprimir no fim.
 
+## Usuário admin com registro fechado
+
+O primeiro usuário criado no servidor vira admin. Com `ALLOW_REGISTRATION=false`:
+
+**DB vazia:** no primeiro start o Tuwunel loga um token de uso único que funciona mesmo com registro fechado. Registre pelo cliente com ele.
+
+```bash
+journalctl -u tuwunel -e | grep -i token
+```
+
+**Já existem usuários:** pela CLI. A DB só aceita um processo, então pare o serviço antes:
+
+```bash
+sudo systemctl stop tuwunel
+sudo -u tuwunel tuwunel -c /etc/tuwunel/tuwunel.toml \
+  --execute "users create-user alice" \
+  --execute "users make-user-admin @alice:SERVER_NAME"
+# senha aleatória sai na saída se omitida; confira, Ctrl+C
+sudo systemctl start tuwunel
+```
+
+No modo tor, `SERVER_NAME` é o `.onion`. Nomes de comando mudam entre versões (`create_user` / `create-user`): `--execute "users --help"` lista os atuais.
+
+**Já tem um admin:** na sala `#admins:SERVER_NAME`:
+
+```
+!admin users create-user bob
+!admin users make-user-admin @bob:SERVER_NAME
+```
+
+Alternativa: `ALLOW_REGISTRATION=true` com `REGISTRATION_TOKEN` já só deixa registrar quem tem o token.
+
 ## Portas externas ≠ 80/443 (só clearnet)
 
 No `config.env`:
