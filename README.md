@@ -9,7 +9,7 @@ Dois modos (`NETWORK_MODE` em `config.env`):
 | Identidade | `SERVER_NAME` DNS (`@user:exemplo.com`) | onion v3 gerado (`@user:….onion`) |
 | Exposição | Caddy + TLS, portas 80/443 | Tor HS 80/443 → Caddy só em 127.0.0.1 (`tls internal`) |
 | Você precisa | DNS + encaminhamento no roteador | nada disso |
-| Federação matrix.org | sim | **não** (só outros `.onion`) |
+| Federação matrix.org | sim | **não** (só outros `.onion` e servidores híbridos configurados para isso) |
 
 ## Uso
 
